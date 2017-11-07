@@ -54,6 +54,7 @@ public:
         Vec3fType vertex;
         /* Barycentric coordinates of hit location w.r.t. the triangle. */
         Vec3fType bcoords;
+        bool front_face;
     };
 
 private:
@@ -488,6 +489,7 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
     IdxType idx = NAI;
     Vec3fType cp;
     Vec3fType bcoords;
+    bool front_face;
     float dist = inf;
     float t;
 
@@ -504,10 +506,11 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
             idx = i;
             t = cp_tri.t;
             bcoords = cp_tri.bcoords;
+	    front_face = cp_tri.front_face;
         }
     }
 
-    return BVHTree<IdxType, Vec3fType>::ClosestHit{t, idx, cp, bcoords};
+    return BVHTree<IdxType, Vec3fType>::ClosestHit{t, idx, cp, bcoords, front_face};
 }
 
 template <typename IdxType, typename Vec3fType> bool

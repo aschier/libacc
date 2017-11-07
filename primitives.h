@@ -48,6 +48,7 @@ struct TriangleHit {
     Vec3fType vertex;
     /* Barycentric coordinates of hit location w.r.t. the triangle. */
     Vec3fType bcoords;
+    bool front_face;
 };
 
 template <typename Vec3fType> inline
@@ -199,6 +200,9 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
     Vec3fType p = vertex - normal.dot(vertex - tri.a) * normal;
     Vec3fType ap = p - tri.a;
 
+    // if dot(n, v - intersection) >= 0, we have dot(n, v - a) >= 0 as well
+    bool front_face = normal.dot(vertex - tri.a) >= 0;
+
     Vec3fType bcoords = barycentric_coordinates(ab, ac, ap);
 
     if (bcoords[0] < 0.0) {
@@ -217,7 +221,7 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
                 bcoords[2] = 0.0;
                 bcoords[1] = 1.0;
         }
-        return TriangleHit<Vec3fType>{t, tri.b + t / n * bc, bcoords};
+        return TriangleHit<Vec3fType>{t, tri.b + t / n * bc, bcoords, front_face};
     }
 
     if (bcoords[1] < 0.0) {
@@ -235,7 +239,7 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
                 bcoords[2] = 0.0;
                 bcoords[0] = 1.0;
         }
-        return TriangleHit<Vec3fType>{t, tri.c + t / n * ca, bcoords};
+        return TriangleHit<Vec3fType>{t, tri.c + t / n * ca, bcoords, front_face};
     }
 
     if (bcoords[2] < 0.0) {
@@ -253,7 +257,7 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
                 bcoords[1] = 0.0;
                 bcoords[0] = 1.0;
         }
-        return TriangleHit<Vec3fType>{t, tri.a + t / n * ab, bcoords};
+        return TriangleHit<Vec3fType>{t, tri.a + t / n * ab, bcoords, front_face};
     }
 
     Vec3fType vec = tri.a * bcoords[0] + tri.b * bcoords[1] + tri.c * bcoords[2];;
@@ -263,7 +267,7 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
     float t = (vec - vertex).norm();
 #endif
 
-    return TriangleHit<Vec3fType>{t, vec, bcoords};
+    return TriangleHit<Vec3fType>{t, vec, bcoords, front_face};
 }
 
 template <typename Vec3fType> inline
