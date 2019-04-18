@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, Nils Moehrle
+ * Copyright (C) 2015-2018, Nils Moehrle
  * All rights reserved.
  *
  * This software may be modified and distributed under the terms
@@ -9,17 +9,17 @@
 #ifndef ACC_BVHTREE_HEADER
 #define ACC_BVHTREE_HEADER
 
-#include <array>
-#include <deque>
-#include <stack>
-#include <atomic>
-#include <thread>
-#include <limits>
 #include <algorithm>
+#include <array>
+#include <atomic>
+#include <deque>
+#include <limits>
+#include <numeric>
+#include <stack>
+#include <thread>
+#include <vector>
 
 #include <cassert>
-#include <vector>
-#include <numeric>
 
 #include "primitives.h"
 
