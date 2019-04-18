@@ -489,9 +489,9 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
     IdxType idx = NAI;
     Vec3fType cp;
     Vec3fType bcoords;
-    bool front_face;
+    bool front_face = true;
     double dist = inf;
-    double t;
+    double t = inf;
 
     for (std::size_t i = node.first; i < node.last; ++i) {
         TriangleHit<Vec3fType> cp_tri = acc::closest_point(vertex, tris[i]);
