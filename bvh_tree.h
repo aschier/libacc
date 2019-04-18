@@ -131,7 +131,7 @@ public:
 
 
     Tri const & get_triangle(IdxType idx) const { return tris[idx]; }
-    IdxType const & get_index(IdxType idx) const { return indices[idx]; }
+    IdxType const get_index(IdxType idx) const { return idx; } // TODO: remove me
 
     bool intersect(Ray ray, Hit * hit_ptr = nullptr) const;
     bool closest_point(Vec3fType & vertex, ClosestHit * ch_ptr,
@@ -503,10 +503,10 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
         if (dist_tri < dist) {
             cp = cp_tri.vertex;
             dist = dist_tri;
-            idx = i;
+            idx = indices[i];
             t = cp_tri.t;
             bcoords = cp_tri.bcoords;
-	    front_face = cp_tri.front_face;
+            front_face = cp_tri.front_face;
         }
     }
 
