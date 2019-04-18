@@ -36,14 +36,14 @@ template <typename Vec3fType>
 struct Ray {
     Vec3fType origin;
     Vec3fType dir;
-    float tmin;
-    float tmax;
+    double tmin;
+    double tmax;
 };
 
 template <typename Vec3fType>
 struct TriangleHit {
     /// Parameter of the ray (distance of hit location).
-    float t;
+    double t;
     /// intersection point
     Vec3fType vertex;
     /* Barycentric coordinates of hit location w.r.t. the triangle. */
@@ -75,8 +75,8 @@ template <typename Vec3fType> inline
 AABB<Vec3fType> calculate_aabb(std::vector<Vec3fType> const & verts)
 {
     AABB<Vec3fType> aabb;
-    aabb.min = Vec3fType(std::numeric_limits<float>::max());
-    aabb.max = Vec3fType(std::numeric_limits<float>::lowest());
+    aabb.min = Vec3fType(std::numeric_limits<double>::max());
+    aabb.max = Vec3fType(std::numeric_limits<double>::lowest());
     for (std::size_t i = 0; i < verts.size(); ++i) {
         for (int j = 0; j < 3; ++j) {
             aabb.min[j] = std::min(aabb.min[j], verts[i][j]);
@@ -96,17 +96,17 @@ void calculate_aabb(Tri<Vec3fType> const & tri, AABB<Vec3fType> * aabb)
 }
 
 template <typename Vec3fType> inline
-float surface_area(AABB<Vec3fType> const & aabb)
+double surface_area(AABB<Vec3fType> const & aabb)
 {
-    float e0 = aabb.max[0] - aabb.min[0];
-    float e1 = aabb.max[1] - aabb.min[1];
-    float e2 = aabb.max[2] - aabb.min[2];
+    double e0 = aabb.max[0] - aabb.min[0];
+    double e1 = aabb.max[1] - aabb.min[1];
+    double e2 = aabb.max[2] - aabb.min[2];
     return 2.0 * (e0 * e1 + e1 * e2 + e2 * e0);
 }
 
 /* WARNING asserts valid AABB */
 template <typename Vec3fType> inline
-float volume(AABB<Vec3fType> const & aabb) {
+double volume(AABB<Vec3fType> const & aabb) {
     Vec3fType diff = aabb.max - aabb.min;
     return diff[0] * diff[1] * diff[2];
 }
@@ -120,24 +120,24 @@ bool valid(AABB<Vec3fType> const & aabb) {
 }
 
 template <typename Vec3fType> inline
-float mid(AABB<Vec3fType> const & aabb, std::size_t d)
+double mid(AABB<Vec3fType> const & aabb, std::size_t d)
 {
     return (aabb.min[d] + aabb.max[d]) / 2.0;
 }
 
-constexpr float inf = std::numeric_limits<float>::infinity();
-constexpr float flt_eps = std::numeric_limits<float>::epsilon();
+constexpr double inf = std::numeric_limits<double>::infinity();
+constexpr double flt_eps = std::numeric_limits<double>::epsilon();
 
 /* Derived form Tavian Barnes implementation posted in
  * http://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
  * on 23rd March 2015 */
 template <typename Vec3fType> inline
-bool intersect(Ray<Vec3fType> const & ray, AABB<Vec3fType> const & aabb, float * tmin_ptr)
+bool intersect(Ray<Vec3fType> const & ray, AABB<Vec3fType> const & aabb, double * tmin_ptr)
 {
-    float tmin = ray.tmin, tmax = ray.tmax;
+    double tmin = ray.tmin, tmax = ray.tmax;
     for (int i = 0; i < 3; ++i) {
-        float t1 = (aabb.min[i] - ray.origin[i]) / ray.dir[i];
-        float t2 = (aabb.max[i] - ray.origin[i]) / ray.dir[i];
+        double t1 = (aabb.min[i] - ray.origin[i]) / ray.dir[i];
+        double t2 = (aabb.max[i] - ray.origin[i]) / ray.dir[i];
 
         tmin = std::max(tmin, std::min(std::min(t1, t2), inf));
         tmax = std::min(tmax, std::max(std::max(t1, t2), -inf));
@@ -152,11 +152,11 @@ Vec3fType barycentric_coordinates(Vec3fType const & v0, Vec3fType const & v1,
 {
     /* Derived from the book "Real-Time Collision Detection"
      * by Christer Ericson published by Morgan Kaufmann in 2005 */
-    float d00 = v0.dot(v0);
-    float d01 = v0.dot(v1);
-    float d11 = v1.dot(v1);
-    float d20 = v2.dot(v0);
-    float d21 = v2.dot(v1);
+    double d00 = v0.dot(v0);
+    double d01 = v0.dot(v1);
+    double d11 = v1.dot(v1);
+    double d20 = v2.dot(v0);
+    double d21 = v2.dot(v1);
     double denom = d00 * d11 - d01 * d01;
 
     Vec3fType bcoords;
@@ -192,7 +192,7 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
     Vec3fType ac = tri.c - tri.a;
     Vec3fType normal = ab.cross(ac);
 
-    float n = normal.norm();
+    double n = normal.norm();
     //if (n < flt_eps) return false;
 
     normal /= n;
@@ -207,11 +207,11 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
 
     if (bcoords[0] < 0.0) {
         Vec3fType bc = tri.c - tri.b;
-        float n = bc.norm();
-        float t = std::max(0.0, std::min(bc.dot(p - tri.b) / n, n));
+        double n = bc.norm();
+        double t = std::max(0.0, std::min(bc.dot(p - tri.b) / n, n));
         // point projected on the edge
         bcoords[0] = 0.0;
-        float scalefactor = 1.0/(bcoords[1]+bcoords[2]);
+        double scalefactor = 1.0/(bcoords[1]+bcoords[2]);
         bcoords[1] = scalefactor * bcoords[1];
         bcoords[2] = scalefactor * bcoords[2];
         if(bcoords[1] < 0) {
@@ -226,10 +226,10 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
 
     if (bcoords[1] < 0.0) {
         Vec3fType ca = tri.a - tri.c;
-        float n = ca.norm();
-        float t = std::max(0.0, std::min(ca.dot(p - tri.c) / n, n));
+        double n = ca.norm();
+        double t = std::max(0.0, std::min(ca.dot(p - tri.c) / n, n));
         bcoords[1] = 0.0;
-        float scalefactor = 1.0/(bcoords[0]+bcoords[2]);
+        double scalefactor = 1.0/(bcoords[0]+bcoords[2]);
         bcoords[0] = scalefactor * bcoords[0];
         bcoords[2] = scalefactor * bcoords[2];
         if(bcoords[0] < 0) {
@@ -244,10 +244,10 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
 
     if (bcoords[2] < 0.0) {
         //Vec3fType ab = tri.b - tri.a;
-        float n = ab.norm();
-        float t = std::max(0.0, std::min(ab.dot(p - tri.a) / n, n));
+        double n = ab.norm();
+        double t = std::max(0.0, std::min(ab.dot(p - tri.a) / n, n));
         bcoords[2] = 0.0;
-        float scalefactor = 1.0/(bcoords[1]+bcoords[0]);
+        double scalefactor = 1.0/(bcoords[1]+bcoords[0]);
         bcoords[1] = scalefactor * bcoords[1];
         bcoords[0] = scalefactor * bcoords[0];
         if(bcoords[0] < 0) {
@@ -262,9 +262,9 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
 
     Vec3fType vec = tri.a * bcoords[0] + tri.b * bcoords[1] + tri.c * bcoords[2];;
 #ifdef USE_LIBEIGEN
-    float t = (vec - vertex).norm();
+    double t = (vec - vertex).norm();
 #else
-    float t = (vec - vertex).norm();
+    double t = (vec - vertex).norm();
 #endif
 
     return TriangleHit<Vec3fType>{t, vec, bcoords, front_face};
@@ -272,21 +272,21 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
 
 template <typename Vec3fType> inline
 bool intersect(Ray<Vec3fType> const & ray, Tri<Vec3fType> const & tri,
-    float * t_ptr, Vec3fType * bcoords_ptr)
+    double * t_ptr, Vec3fType * bcoords_ptr)
 {
     Vec3fType ab = tri.b - tri.a;
     Vec3fType ac = tri.c - tri.a;
     Vec3fType normal = ab.cross(ac);
 
-    float n = normal.norm();
+    double n = normal.norm();
     if (n < flt_eps) return false;
 
     normal /= n;
 
-    float cosine = normal.dot(ray.dir);
+    double cosine = normal.dot(ray.dir);
     if (std::abs(cosine) < flt_eps) return false;
 
-    float t = -normal.dot(ray.origin - tri.a) / cosine;
+    double t = -normal.dot(ray.origin - tri.a) / cosine;
 
     if (t < ray.tmin || ray.tmax < t) return false;
 
@@ -295,7 +295,7 @@ bool intersect(Ray<Vec3fType> const & ray, Tri<Vec3fType> const & tri,
 
     Vec3fType bcoords = barycentric_coordinates(ab, ac, ap);
 
-    constexpr float eps = 1e-3f;
+    constexpr double eps = 1e-3f;
     if (-eps > bcoords[0] || bcoords[0] > 1.0 + eps) return false;
     if (-eps > bcoords[1] || bcoords[1] > 1.0 + eps) return false;
     if (-eps > bcoords[2] || bcoords[2] > 1.0 + eps) return false;

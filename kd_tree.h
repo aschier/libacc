@@ -31,7 +31,7 @@ public:
     typedef std::shared_ptr<KDTree const> ConstPtr;
 
 private:
-    std::vector<math::Vector<float, K> > const vertices;
+    std::vector<math::Vector<double, K> > const vertices;
     struct Node {
         typedef IdxType ID;
         IdxType vertex_id;
@@ -68,29 +68,29 @@ public:
     template <class C>
     static C convert(KDTree const & kd_tree);
 
-    static Ptr create(std::vector<math::Vector<float, K> > const & vertices,
+    static Ptr create(std::vector<math::Vector<double, K> > const & vertices,
         int max_threads = std::thread::hardware_concurrency()) {
         return std::make_shared<KDTree>(vertices, max_threads);
     }
 
-    KDTree(std::vector<math::Vector<float, K> > const & vertices,
+    KDTree(std::vector<math::Vector<double, K> > const & vertices,
         int max_threads = std::thread::hardware_concurrency());
 
     bool
-    find_nn(math::Vector<float, K> point, std::pair<IdxType, float> * nn,
-        float max_dist = std::numeric_limits<float>::infinity()) const;
+    find_nn(math::Vector<double, K> point, std::pair<IdxType, double> * nn,
+        double max_dist = std::numeric_limits<double>::infinity()) const;
 
     bool
-    find_nns(math::Vector<float, K> point, std::size_t n,
-        std::vector<std::pair<IdxType, float> > * nns_ptr,
-        float max_dist = std::numeric_limits<float>::infinity()) const;
+    find_nns(math::Vector<double, K> point, std::size_t n,
+        std::vector<std::pair<IdxType, double> > * nns_ptr,
+        double max_dist = std::numeric_limits<double>::infinity()) const;
 };
 
 template <unsigned K, typename IdxType>
 constexpr IdxType KDTree<K, IdxType>::NAI;
 
 template <unsigned K, typename IdxType>
-KDTree<K, IdxType>::KDTree(std::vector<math::Vector<float, K> > const & vertices,
+KDTree<K, IdxType>::KDTree(std::vector<math::Vector<double, K> > const & vertices,
     int max_threads)
     : vertices(vertices), num_nodes(0) {
 
@@ -159,10 +159,10 @@ KDTree<K, IdxType>::ssplit(typename Node::ID node_id, std::vector<IdxType> * ind
 
 template <unsigned K, typename IdxType>
 bool
-KDTree<K, IdxType>::find_nn(math::Vector<float, K> point,
-    std::pair<IdxType, float> * nn_ptr, float max_dist) const
+KDTree<K, IdxType>::find_nn(math::Vector<double, K> point,
+    std::pair<IdxType, double> * nn_ptr, double max_dist) const
 {
-    std::vector<std::pair<IdxType, float> > nns;
+    std::vector<std::pair<IdxType, double> > nns;
     if (!find_nns(point, 1, &nns, max_dist)) return false;
 
     if (nn_ptr != nullptr) *nn_ptr = nns[0];
@@ -170,16 +170,16 @@ KDTree<K, IdxType>::find_nn(math::Vector<float, K> point,
 }
 
 template <typename IdxType>
-static bool compare(std::pair<IdxType, float> l, std::pair<IdxType, float> r) {
+static bool compare(std::pair<IdxType, double> l, std::pair<IdxType, double> r) {
     return l.second < r.second;
 }
 
 template <unsigned K, typename IdxType>
 bool
-KDTree<K, IdxType>::find_nns(math::Vector<float, K> vertex, std::size_t n,
-    std::vector<std::pair<IdxType, float> > * nns_ptr, float max_dist) const
+KDTree<K, IdxType>::find_nns(math::Vector<double, K> vertex, std::size_t n,
+    std::vector<std::pair<IdxType, double> > * nns_ptr, double max_dist) const
 {
-    std::vector<std::pair<IdxType, float> > nns;
+    std::vector<std::pair<IdxType, double> > nns;
     nns.reserve(n);
 
     //TODO use square distances
@@ -191,20 +191,20 @@ KDTree<K, IdxType>::find_nns(math::Vector<float, K> vertex, std::size_t n,
     while (true) {
         Node const & node = nodes[node_id];
 
-        float diff = vertex[node.d] - vertices[node.vertex_id][node.d];
+        double diff = vertex[node.d] - vertices[node.vertex_id][node.d];
         if (down) {
-            float dist = (vertex - vertices[node.vertex_id]).norm();
+            double dist = (vertex - vertices[node.vertex_id]).norm();
             if (dist <= max_dist) {
                 if (nns.size() < n) {
                     nns.emplace_back(node.vertex_id, dist);
                 } else {
-                    typename std::vector<std::pair<IdxType, float> >::iterator it;
+                    typename std::vector<std::pair<IdxType, double> >::iterator it;
                     it = std::max_element(nns.begin(), nns.end(), compare<IdxType>);
                     *it = std::make_pair(node.vertex_id, dist);
                 }
 
                 if (nns.size() == n) {
-                    typename std::vector<std::pair<IdxType, float> >::iterator it;
+                    typename std::vector<std::pair<IdxType, double> >::iterator it;
                     it = std::max_element(nns.begin(), nns.end(), compare<IdxType>);
                     max_dist = it->second;
                 }
@@ -218,7 +218,7 @@ KDTree<K, IdxType>::find_nns(math::Vector<float, K> vertex, std::size_t n,
                     s.push(node_id);
                 }
 
-                float diff = vertex[node.d] - vertices[node.vertex_id][node.d];
+                double diff = vertex[node.d] - vertices[node.vertex_id][node.d];
 
                 typename Node::ID next = (diff < 0.0f) ? node.left : node.right;
                 typename Node::ID other = (diff < 0.0f) ? node.right : node.left;

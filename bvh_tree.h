@@ -38,7 +38,7 @@ public:
     typedef acc::Ray<Vec3fType> Ray;
     struct Hit {
         /* Parameter of the ray (distance of hit location). */
-        float t;
+        double t;
         /* Index of the struck triangle. */
         IdxType idx;
         /* Barycentric coordinates of hit location w.r.t. the triangle. */
@@ -47,7 +47,7 @@ public:
 
     struct ClosestHit {
         /* Parameter of the ray (distance of hit location). */
-        float t;
+        double t;
         /* Index of the struck triangle. */
         IdxType idx;
         /* the intersection point */
@@ -135,7 +135,7 @@ public:
 
     bool intersect(Ray ray, Hit * hit_ptr = nullptr) const;
     bool closest_point(Vec3fType & vertex, ClosestHit * ch_ptr,
-        float max_dist = inf) const;
+        double max_dist = inf) const;
     Vec3fType closest_point(Vec3fType & vertex);
 };
 
@@ -199,11 +199,11 @@ BVHTree<IdxType, Vec3fType>::bsplit(typename Node::ID node_id,
     std::array<AABB, BVHTREE_NUM_BINS> right_aabbs;
     std::vector<IdxType> bin(n);
 
-    float min_cost = inf;
+    double min_cost = inf;
     std::pair<IdxType, char> split;
     for (char d = 0; d < 3; ++d) {
-        float min = node.aabb.min[d];
-        float max = node.aabb.max[d];
+        double min = node.aabb.min[d];
+        double max = node.aabb.max[d];
         for (Bin & bin : bins) {
             bin = {0, {Vec3fType(inf, inf, inf), Vec3fType(-inf, -inf, -inf)}};
         }
@@ -224,7 +224,7 @@ BVHTree<IdxType, Vec3fType>::bsplit(typename Node::ID node_id,
         std::size_t nl = bins[0].n;
         for (std::size_t idx = 1; idx < BVHTREE_NUM_BINS; ++idx) {
             std::size_t nr = n - nl;
-            float cost = 1.2f + (surface_area(left_aabb) / surface_area(node.aabb) * nl
+            double cost = 1.2f + (surface_area(left_aabb) / surface_area(node.aabb) * nl
             + surface_area(right_aabbs[idx]) / surface_area(node.aabb) * nr);
             if (cost <= min_cost) {
                 min_cost = cost;
@@ -242,8 +242,8 @@ BVHTree<IdxType, Vec3fType>::bsplit(typename Node::ID node_id,
     IdxType sidx;
     std::tie(d, sidx) = split;
 
-    float min = node.aabb.min[d];
-    float max = node.aabb.max[d];
+    double min = node.aabb.min[d];
+    double max = node.aabb.max[d];
     for (Bin & bin : bins) {
         bin = {0, {Vec3fType(inf, inf, inf), Vec3fType(-inf, -inf, -inf)}};
     }
@@ -293,7 +293,7 @@ BVHTree<IdxType, Vec3fType>::ssplit(typename Node::ID node_id, std::vector<AABB>
     Node & node = nodes[node_id];
     IdxType n = node.last - node.first;
 
-    float min_cost = inf;
+    double min_cost = inf;
     std::pair<char, IdxType> split;
     std::vector<AABB> right_aabbs(n);
     for (char d = 0; d < 3; ++d) {
@@ -316,7 +316,7 @@ BVHTree<IdxType, Vec3fType>::ssplit(typename Node::ID node_id, std::vector<AABB>
         for (IdxType i = node.first + 1; i < node.last; ++i) {
             IdxType nl = i - node.first;
             IdxType nr = n - nl;
-            float cost = 1.2f + (surface_area(left_aabb) / surface_area(node.aabb) * nl
+            double cost = 1.2f + (surface_area(left_aabb) / surface_area(node.aabb) * nl
                 + surface_area(right_aabbs[nl]) / surface_area(node.aabb) * nr);
             if (cost <= min_cost) {
                 min_cost = cost;
@@ -416,7 +416,7 @@ BVHTree<IdxType, Vec3fType>::intersect(Ray const & ray, typename Node::ID node_i
     Node const & node = nodes[node_id];
     bool ret = false;
     for (std::size_t i = node.first; i < node.last; ++i) {
-        float t;
+        double t;
         Vec3fType bcoords;
         if (acc::intersect(ray, tris[i], &t, &bcoords)) {
             if (t > hit->t) continue;
@@ -439,7 +439,7 @@ BVHTree<IdxType, Vec3fType>::intersect(Ray ray, Hit * hit_ptr) const {
     while (true) {
         Node const & node = nodes[node_id];
         if (node.left != NAI && node.right != NAI) {
-            float tmin_left, tmin_right;
+            double tmin_left, tmin_right;
             bool left = acc::intersect(ray, nodes[node.left].aabb, &tmin_left);
             bool right = acc::intersect(ray, nodes[node.right].aabb, &tmin_right);
             if (left && right) {
@@ -490,15 +490,15 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
     Vec3fType cp;
     Vec3fType bcoords;
     bool front_face;
-    float dist = inf;
-    float t;
+    double dist = inf;
+    double t;
 
     for (std::size_t i = node.first; i < node.last; ++i) {
         TriangleHit<Vec3fType> cp_tri = acc::closest_point(vertex, tris[i]);
 #ifdef USE_LIBEIGEN
-        float dist_tri = (cp_tri.vertex - vertex).squaredNorm();
+        double dist_tri = (cp_tri.vertex - vertex).squaredNorm();
 #else
-        float dist_tri = (cp_tri.vertex - vertex).square_norm();
+        double dist_tri = (cp_tri.vertex - vertex).square_norm();
 #endif
         if (dist_tri < dist) {
             cp = cp_tri.vertex;
@@ -515,9 +515,9 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
 
 template <typename IdxType, typename Vec3fType> bool
 BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
-    ClosestHit * ch_ptr, float max_dist) const
+    ClosestHit * ch_ptr, double max_dist) const
 {
-    float dist = max_dist * max_dist;
+    double dist = max_dist * max_dist;
     IdxType idx = NAI;
     Vec3fType cp;
     ClosestHit result_hit;
@@ -530,11 +530,11 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
             Vec3fType cp_left = acc::closest_point(vertex, nodes[node.left].aabb);
             Vec3fType cp_right = acc::closest_point(vertex, nodes[node.right].aabb);
 #ifdef USE_LIBEIGEN
-            float dmin_left = (cp_left - vertex).squaredNorm();
-            float dmin_right = (cp_right - vertex).squaredNorm();
+            double dmin_left = (cp_left - vertex).squaredNorm();
+            double dmin_right = (cp_right - vertex).squaredNorm();
 #else
-            float dmin_left = (cp_left - vertex).square_norm();
-            float dmin_right = (cp_right - vertex).square_norm();
+            double dmin_left = (cp_left - vertex).square_norm();
+            double dmin_right = (cp_right - vertex).square_norm();
 #endif
             bool left = dmin_left < dist;
             bool right = dmin_right < dist;
@@ -560,9 +560,9 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
             IdxType idx_leaf = ch.idx;
             Vec3fType cp_leaf = ch.vertex;
 #ifdef USE_LIBEIGEN
-            float dist_leaf = (cp_leaf - vertex).squaredNorm();
+            double dist_leaf = (cp_leaf - vertex).squaredNorm();
 #else
-            float dist_leaf = (cp_leaf - vertex).square_norm();
+            double dist_leaf = (cp_leaf - vertex).square_norm();
 #endif
             if (dist_leaf < dist) {
                 dist = dist_leaf;
