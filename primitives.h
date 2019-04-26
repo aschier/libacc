@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015-2018, Nils Moehrle
+ * Copyright (C) 2017-2019, Nils Moehrle
  * All rights reserved.
  *
  * This software may be modified and distributed under the terms
