@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <cassert>
+#include <memory>
 
 #include "primitives.h"
 
