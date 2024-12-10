@@ -11,12 +11,8 @@
 #define ACC_PRIMITIVES_HEADER
 
 #include <limits>
-
-#ifndef USE_LIBEIGEN
-#include <math/vector.h>
-#endif
-
 #include "defines.h"
+#include "traits.h"
 
 ACC_NAMESPACE_BEGIN
 
@@ -262,12 +258,7 @@ TriangleHit<Vec3fType> closest_point(Vec3fType const & vertex, Tri<Vec3fType> co
     }
 
     Vec3fType vec = tri.a * bcoords[0] + tri.b * bcoords[1] + tri.c * bcoords[2];;
-#ifdef USE_LIBEIGEN
-    double t = (vec - vertex).norm();
-#else
-    double t = (vec - vertex).norm();
-#endif
-
+    double t = squaredNorm(vec - vertex);
     return TriangleHit<Vec3fType>{t, vec, bcoords, front_face};
 }
 

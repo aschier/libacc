@@ -2,17 +2,13 @@ cmake_minimum_required(VERSION 3.30.0)
 project(libacc)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
-
-set(LIBACC_USE_EIGEN FALSE CACHE BOOL "Use libeigen vectors")
+set(CMAKE_CXX_STANDARD 17)
 
 add_library(libacc INTERFACE)
 target_include_directories(libacc INTERFACE
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
-if(LIBACC_USE_EIGEN)
-target_compile_definitions(libacc INTERFACE USE_LIBEIGEN)
-endif()
 
 configure_package_config_file(libaccConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/libaccConfig.cmake INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(TARGETS libacc EXPORT libacc-targets)

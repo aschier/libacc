@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "primitives.h"
+#include "traits.h"
 
 #ifndef BVHTREE_NUM_BINS
     #define BVHTREE_NUM_BINS 64
@@ -497,11 +498,7 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
 
     for (std::size_t i = node.first; i < node.last; ++i) {
         TriangleHit<Vec3fType> cp_tri = acc::closest_point(vertex, tris[i]);
-#ifdef USE_LIBEIGEN
-        double dist_tri = (cp_tri.vertex - vertex).squaredNorm();
-#else
-        double dist_tri = (cp_tri.vertex - vertex).square_norm();
-#endif
+        double dist_tri = squaredNorm(cp_tri.vertex - vertex);
         if (dist_tri < dist) {
             cp = cp_tri.vertex;
             dist = dist_tri;
@@ -531,13 +528,8 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
         if (node.left != NAI && node.right != NAI) {
             Vec3fType cp_left = acc::closest_point(vertex, nodes[node.left].aabb);
             Vec3fType cp_right = acc::closest_point(vertex, nodes[node.right].aabb);
-#ifdef USE_LIBEIGEN
-            double dmin_left = (cp_left - vertex).squaredNorm();
-            double dmin_right = (cp_right - vertex).squaredNorm();
-#else
-            double dmin_left = (cp_left - vertex).square_norm();
-            double dmin_right = (cp_right - vertex).square_norm();
-#endif
+            double dmin_left = squaredNorm(cp_left - vertex);
+            double dmin_right = squaredNorm(cp_right - vertex);
             bool left = dmin_left < dist;
             bool right = dmin_right < dist;
             if (left && right) {
@@ -561,11 +553,7 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
             ClosestHit ch = closest_point(vertex, node_id);
             IdxType idx_leaf = ch.idx;
             Vec3fType cp_leaf = ch.vertex;
-#ifdef USE_LIBEIGEN
-            double dist_leaf = (cp_leaf - vertex).squaredNorm();
-#else
-            double dist_leaf = (cp_leaf - vertex).square_norm();
-#endif
+            double dist_leaf = squaredNorm(cp_leaf - vertex);
             if (dist_leaf < dist) {
                 dist = dist_leaf;
                 idx = idx_leaf;
