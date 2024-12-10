@@ -107,7 +107,7 @@ private:
         std::atomic<int> * num_threads);
 
     bool intersect(Ray const & ray, typename Node::ID node_id, Hit * hit) const;
-    ClosestHit closest_point(Vec3fType & vertex,
+    ClosestHit closest_point(const Vec3fType & vertex,
         typename Node::ID node_id) const;
 
 public:
@@ -137,9 +137,9 @@ public:
     IdxType const get_index(IdxType idx) const { return idx; } // TODO: remove me
 
     bool intersect(Ray ray, Hit * hit_ptr = nullptr) const;
-    bool closest_point(Vec3fType & vertex, ClosestHit * ch_ptr,
+    bool closest_point(const Vec3fType & vertex, ClosestHit * ch_ptr,
         double max_dist = inf) const;
-    Vec3fType closest_point(Vec3fType & vertex);
+    Vec3fType closest_point(const Vec3fType & vertex);
 };
 
 template <typename IdxType, typename Vec3fType>
@@ -484,7 +484,7 @@ BVHTree<IdxType, Vec3fType>::intersect(Ray ray, Hit * hit_ptr) const {
 
 template <typename IdxType, typename Vec3fType>
 typename BVHTree<IdxType, Vec3fType>::ClosestHit
-BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
+BVHTree<IdxType, Vec3fType>::closest_point(const Vec3fType & vertex,
     typename Node::ID node_id) const
 {
     Node const & node = nodes[node_id];
@@ -513,7 +513,7 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
 }
 
 template <typename IdxType, typename Vec3fType> bool
-BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
+BVHTree<IdxType, Vec3fType>::closest_point(const Vec3fType & vertex,
     ClosestHit * ch_ptr, double max_dist) const
 {
     double dist = max_dist * max_dist;
@@ -576,7 +576,7 @@ BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex,
 }
 
 template <typename IdxType, typename Vec3fType> Vec3fType
-BVHTree<IdxType, Vec3fType>::closest_point(Vec3fType & vertex) {
+BVHTree<IdxType, Vec3fType>::closest_point(const Vec3fType & vertex) {
     ClosestHit cp;
     closest_point(vertex, &cp);
     return cp.vertex;
