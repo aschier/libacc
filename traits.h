@@ -1,6 +1,18 @@
-#pragma once
+/*
+ * Copyright (C) 2024-2025, Alexander Schier
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD 3-Clause license. See the LICENSE.txt file for details.
+ */
+
+#ifndef ACC_TRAITS_HEADER
+#define ACC_TRAITS_HEADER
 
 #include <type_traits>
+#include "defines.h"
+
+ACC_NAMESPACE_BEGIN
 
 template<typename T, typename = void>
 struct NormHelper {
@@ -32,3 +44,7 @@ template<typename T>
 double squaredNorm(const T &vec) {
 	return NormHelper<T>::squaredNorm(vec);
 }
+
+ACC_NAMESPACE_END
+
+#endif /* ACC_TRAITS_HEADER */
