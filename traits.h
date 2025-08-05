@@ -14,35 +14,41 @@
 
 ACC_NAMESPACE_BEGIN
 
-template<typename T, typename = void>
-struct NormHelper {
-	static double squaredNorm(const T&) {
-		static_assert(sizeof(T) == 0, "Norm function not implemented for this type");
-		return 0.0;
-	}
-};
-
 // Types with square_norm like math/vector.h
+template<typename T, typename = void>
+struct has_square_norm : std::false_type {};
 template<typename T>
-struct NormHelper<T, std::void_t<decltype(std::declval<T>().square_norm())>> {
-	static double squaredNorm(const T& vec) { return vec.square_norm(); }
-};
+struct has_square_norm<T, std::void_t<decltype(std::declval<T>().square_norm())>> : std::true_type {};
 
 // Types with squaredNorm like Eigen::Vector3d
+template<typename T, typename = void>
+struct has_squaredNorm : std::false_type {};
 template<typename T>
-struct NormHelper<T, std::void_t<decltype(std::declval<T>().squaredNorm())>> {
-	static double squaredNorm(const T& vec) { return vec.squaredNorm(); }
-};
+struct has_squaredNorm<T, std::void_t<decltype(std::declval<T>().squaredNorm())>> : std::true_type {};
 
 // Types with sqrnorm like OpenMesh::Vec3d
+template<typename T, typename = void>
+struct has_sqrnorm : std::false_type {};
 template<typename T>
-struct NormHelper<T, std::void_t<decltype(std::declval<T>().sqrnorm())>> {
-	static double squaredNorm(const T& vec) { return vec.sqrnorm(); }
-};
+struct has_sqrnorm<T, std::void_t<decltype(std::declval<T>().sqrnorm())>> : std::true_type {};
+
+// Types that are unsupported
+template<typename>
+struct dependent_false : std::false_type {};
+
 
 template<typename T>
-double squaredNorm(const T &vec) {
-	return NormHelper<T>::squaredNorm(vec);
+double squaredNorm(const T& vec) {
+	if constexpr (has_square_norm<T>::value) {
+		return vec.square_norm();
+	} else if constexpr (has_squaredNorm<T>::value) {
+		return vec.squaredNorm();
+	} else if constexpr (has_sqrnorm<T>::value) {
+		return vec.sqrnorm();
+	} else {
+		static_assert(dependent_false<T>::value, "Norm function not implemented for this type");
+		return 0.0;
+	}
 }
 
 ACC_NAMESPACE_END
